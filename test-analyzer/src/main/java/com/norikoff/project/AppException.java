@@ -1,4 +1,4 @@
-package project;
+package com.norikoff.project;
 
 public class AppException extends Exception {
 

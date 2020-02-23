@@ -1,4 +1,4 @@
-package project;
+package com.norikoff.project;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

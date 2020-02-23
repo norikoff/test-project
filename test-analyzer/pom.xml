@@ -19,10 +19,27 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <configuration>
+                    <mainClass>com.norikoff.com.norikoff.project.Task2</mainClass>
+                    <arguments>
+                        <argument>stats-dates.txt</argument>
+                        <argument>stats-offices.txt</argument>
+                        <argument>ops1.txt</argument>
+                        <argument>ops2.txt</argument>
+                        <argument>ops3.txt</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <properties>
+        <exec.mainClass>com.norikoff.project.Task</exec.mainClass>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <log4j.version>2.7</log4j.version>

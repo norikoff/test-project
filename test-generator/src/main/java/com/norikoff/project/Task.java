@@ -52,11 +52,11 @@ public class Task {
 
     static Map<Long, String> readPointsFromFile(String filename) throws AppException {
         final Map<Long, String> pointsMap = Optional.ofNullable(filename).map(fileName -> {
-            logger.debug("Try to get points from file: {}", fileName);
+            System.out.println("Try to get points from file: " + fileName);
             try {
                 return Files.lines(Paths.get(path + "/" + fileName)).collect(Collectors.toMap(x -> Long.parseLong(x.split(" ")[0]), x -> x.split(" ")[1]));
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                System.out.println(e.getMessage());
             }
             return null;
         }).orElseThrow(() -> new AppException("No argument for points"));
