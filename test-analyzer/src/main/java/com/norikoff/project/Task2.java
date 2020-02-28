@@ -9,16 +9,16 @@ import java.io.RandomAccessFile;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,15 +43,15 @@ public class Task2 {
     }
 
     static List<Operation> readOperationsFromFiles(String[] files) throws AppException {
-        return Stream.of(files).skip(2).map(fileName -> {
+        return Stream.of(files).skip(2).flatMap(fileName -> {
             logger.debug("Try to get points from file: {}", fileName);
             try {
-                return Files.lines(Paths.get(path + "/" + fileName)).collect(Collectors.toList());
+                return Files.lines(Paths.get(path + "/" + fileName));
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }
             return null;
-        }).filter(Objects::nonNull).flatMap(Collection::stream).map(op -> {
+        }).filter(Objects::nonNull).map(op -> {
             Operation operation = new Operation();
             Stream.of(op.split(",")).forEach(s -> {
                 final String[] split = s.trim().split("=");
@@ -74,19 +74,31 @@ public class Task2 {
         return operations.stream()
                 .collect(Collectors.groupingBy(Operation::getDate))
                 .values().stream()
-                .map(operationList -> operationList.stream()
-                        .reduce((f1, f2) -> new Operation(f1.getDate(), f1.getAmount().add(f2.getAmount()))))
-                .map(Optional::get)
+                .map(operationList -> {
+                    LocalDate date = operationList.get(0).getDate();
+                    BigDecimal bigDecimal = BigDecimal.ZERO;
+                    for (Operation operation : operationList) {
+                        bigDecimal = bigDecimal.add(operation.getAmount());
+                    }
+                    return new Operation(date, bigDecimal);
+                })
+                .sorted(Comparator.comparing(Operation::getDate))
                 .collect(Collectors.toList());
     }
 
     static List<Operation> computeStatsByPoints(List<Operation> operations) {
         return operations.stream()
-                .collect(Collectors.groupingBy(Operation::getDate))
+                .collect(Collectors.groupingBy(Operation::getPointId))
                 .values().stream()
-                .map(operationList -> operationList.stream()
-                        .reduce((f1, f2) -> new Operation(f1.getPointId(), f1.getAmount().add(f2.getAmount()))))
-                .map(Optional::get)
+                .map(operationList -> {
+                    Long point = operationList.get(0).getPointId();
+                    BigDecimal bigDecimal = BigDecimal.ZERO;
+                    for (Operation operation : operationList) {
+                        bigDecimal = bigDecimal.add(operation.getAmount());
+                    }
+                    return new Operation(point, bigDecimal);
+                })
+                .sorted((f1, f2) -> f2.getAmount().compareTo(f1.getAmount()))
                 .collect(Collectors.toList());
     }
 
@@ -99,10 +111,11 @@ public class Task2 {
                 if (!Files.exists(resolve, LinkOption.NOFOLLOW_LINKS))
                     return Files.createFile(resolve);
                 else {
-                    BufferedWriter writer = Files.newBufferedWriter(resolve);
-                    writer.write("");
-                    writer.flush();
-                    return resolve;
+                    try (BufferedWriter writer = Files.newBufferedWriter(resolve)) {
+                        writer.write("");
+                        writer.flush();
+                        return resolve;
+                    }
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage());
@@ -121,9 +134,9 @@ public class Task2 {
             for (Operation stats : statsList) {
                 byte[] strBytes;
                 if ("date".equals(type))
-                    strBytes = stats.getDateStatus().concat("\n").getBytes();
+                    strBytes = stats.getDateStatus().concat("\n").getBytes(StandardCharsets.UTF_8);
                 else
-                    strBytes = stats.getPointsStatus().concat("\n").getBytes();
+                    strBytes = stats.getPointsStatus().concat("\n").getBytes(StandardCharsets.UTF_8);
                 ByteBuffer buffer = ByteBuffer.allocate(strBytes.length);
                 buffer.put(strBytes);
                 buffer.flip();

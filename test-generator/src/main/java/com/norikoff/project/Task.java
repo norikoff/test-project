@@ -9,6 +9,7 @@ import java.io.RandomAccessFile;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -92,7 +93,7 @@ public class Task {
         Random rand = new Random();
         final ArrayList<Long> pointsKeys = new ArrayList<>(pointsMap.keySet());
         return LongStream.rangeClosed(1, operationCount).parallel()
-                .mapToObj(longCount -> new Operation(getRandomLocalDate(), getRandomLocalTime(), pointsKeys.get(rand.nextInt(pointsKeys.size())), longCount, getRandomAmoun()))
+                .mapToObj(longCount -> new Operation(getRandomLocalDate(), getRandomLocalTime(), pointsKeys.get(rand.nextInt(pointsKeys.size())), longCount, getRandomAmount()))
                 .collect(Collectors.toList());
 
     }
@@ -113,7 +114,7 @@ public class Task {
         return LocalTime.ofNanoOfDay(randomNanos);
     }
 
-    static BigDecimal getRandomAmoun() {
+    static BigDecimal getRandomAmount() {
         final BigDecimal min = BigDecimal.valueOf(10_000.12).setScale(2, BigDecimal.ROUND_HALF_UP);
         final BigDecimal max = BigDecimal.valueOf(100_000.50).setScale(2, BigDecimal.ROUND_HALF_UP);
         BigDecimal randomBigDecimal = min.add(BigDecimal.valueOf(Math.random()).multiply(max.subtract(min)));
@@ -125,7 +126,7 @@ public class Task {
         try (RandomAccessFile stream = new RandomAccessFile(file.toString(), "rw");
              FileChannel channel = stream.getChannel()) {
             for (int i = start; i < end; i++) {
-                byte[] strBytes = operations.get(i).toString().concat("\n").getBytes();
+                byte[] strBytes = operations.get(i).toString().concat("\n").getBytes(StandardCharsets.UTF_8);
                 ByteBuffer buffer = ByteBuffer.allocate(strBytes.length);
                 buffer.put(strBytes);
                 buffer.flip();
@@ -134,12 +135,5 @@ public class Task {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        for (int i = start; i < end; i++) {
-//            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file.toString()))) {
-//                out.writeObject(operations.get(i));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 }

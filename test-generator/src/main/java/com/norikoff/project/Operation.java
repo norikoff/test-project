@@ -6,11 +6,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Operation implements Serializable {
-    LocalDate date;
-    LocalTime time;
-    Long pointId;
-    Long operationId;
-    BigDecimal amount;
+    private LocalDate date;
+    private LocalTime time;
+    private Long pointId;
+    private Long operationId;
+    private BigDecimal amount;
 
     public Operation(LocalDate date, LocalTime time, Long pointId, Long operationId, BigDecimal amount) {
         this.date = date;
